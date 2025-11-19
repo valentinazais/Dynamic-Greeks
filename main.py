@@ -143,7 +143,7 @@ try:
                     combined_value += sign * value
                 plot_data[plot_name].append(combined_value)
         
-        # Display combined plot with multiple y-axes (each metric has its own scale)
+        # Display combined plot with multiple y-axes (each metric has its own scale, but hide y-axes for Greeks)
         if selected_plots:
             st.header("Combined Strategy Plot vs. Underlying Price (S)")
             fig, ax = plt.subplots(figsize=(10, 6))
@@ -152,17 +152,20 @@ try:
             
             for i, plot_name in enumerate(selected_plots):
                 if i == 0:
-                    # First metric on primary axis (left)
+                    # First metric on primary axis (left), show y-axis
                     line, = ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name)
                     ax.set_ylabel(plot_name, color=colors[plot_name])
                     ax.tick_params(axis='y', colors=colors[plot_name])
                 else:
-                    # Additional metrics on new twinx axes (right, spaced out)
+                    # Additional metrics on new twinx axes (right, spaced out), but hide y-axis if it's a Greek
                     new_ax = ax.twinx()
                     new_ax.spines['right'].set_position(('axes', 1.0 + 0.1 * (i - 1)))
                     line, = new_ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name)
-                    new_ax.set_ylabel(plot_name, color=colors[plot_name])
-                    new_ax.tick_params(axis='y', colors=colors[plot_name])
+                    if plot_name != 'Payoff':  # Hide y-axis for Greeks (anything not Payoff)
+                        new_ax.yaxis.set_visible(False)
+                    else:
+                        new_ax.set_ylabel(plot_name, color=colors[plot_name])
+                        new_ax.tick_params(axis='y', colors=colors[plot_name])
                     axes.append(new_ax)
                 lines.append(line)
             
@@ -176,6 +179,6 @@ try:
             
             # Display the plot in Streamlit
             st.pyplot(fig)
-            st.caption("Each metric is plotted with its own y-axis scale for better visibility (primary on left, others on right). Colors are fixed for each metric.")
+            st.caption("Each metric is plotted with its own y-axis scale for better visibility (primary on left; y-axes for Greeks are hidden to reduce clutter). Colors are fixed for each metric.")
 except ValueError as e:
     st.error(f"Error: {e}")
