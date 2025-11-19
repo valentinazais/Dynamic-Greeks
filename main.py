@@ -3,7 +3,10 @@ import math
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+
+# Apply a nicer style to Matplotlib to make it look more like Streamlit's aesthetic
+plt.style.use('ggplot')
 
 # Updated Black-Scholes function with dividend yield (q)
 def black_scholes_option_price_and_greeks(S, K, T, r, q, sigma, option_type='call'):
@@ -143,46 +146,43 @@ try:
                     combined_value += sign * value
                 plot_data[plot_name].append(combined_value)
         
-        # Display combined plot using Plotly (Streamlit-friendly interactive chart)
+        # Display combined plot with multiple y-axes (each metric has its own scale, but hide y-axes for Greeks)
         if selected_plots:
             st.header("Combined Strategy Plot vs. Underlying Price (S)")
-            fig = go.Figure()
+            fig, ax = plt.subplots(figsize=(10, 6))
+            axes = [ax]  # List of axes, starting with the primary
+            lines = []  # To collect lines for legend
             
             for i, plot_name in enumerate(selected_plots):
-                yaxis = f'y{i+1}'
-                show_yaxis = plot_name == 'Payoff' or plot_name == selected_plots[0]  # Show only for Payoff or first if no Payoff
-                fig.add_trace(go.Scatter(
-                    x=S_range,
-                    y=plot_data[plot_name],
-                    name=plot_name,
-                    line=dict(color=colors[plot_name]),
-                    yaxis=yaxis
-                ))
-                
-                # Update layout for each y-axis
-                yaxis_config = dict(
-                    title=plot_name if show_yaxis else "",
-                    titlefont=dict(color=colors[plot_name]),
-                    tickfont=dict(color=colors[plot_name]),
-                    anchor="free" if i > 0 else "x",
-                    overlaying="y",
-                    side="left" if i == 0 else "right",
-                    position=1.0 + 0.05 * i if i > 0 else 0.0,
-                    visible=show_yaxis  # Hide y-axis if not Payoff
-                )
-                fig.update_layout({yaxis: yaxis_config})
+                if i == 0:
+                    # First metric on primary axis (left), show y-axis
+                    line, = ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name)
+                    ax.set_ylabel(plot_name, color=colors[plot_name])
+                    ax.tick_params(axis='y', colors=colors[plot_name])
+                else:
+                    # Additional metrics on new twinx axes (right, spaced out), but hide y-axis if it's a Greek
+                    new_ax = ax.twinx()
+                    new_ax.spines['right'].set_position(('axes', 1.0 + 0.1 * (i - 1)))
+                    line, = new_ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name)
+                    if plot_name != 'Payoff':  # Hide y-axis for Greeks (anything not Payoff)
+                        new_ax.yaxis.set_visible(False)
+                    else:
+                        new_ax.set_ylabel(plot_name, color=colors[plot_name])
+                        new_ax.tick_params(axis='y', colors=colors[plot_name])
+                    axes.append(new_ax)
+                lines.append(line)
             
-            # Update overall layout
-            fig.update_layout(
-                xaxis_title="Underlying Price (S)",
-                title="Combined Metrics (Each with Own Y-Scale)",
-                legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=0),
-                height=600,
-                width=800
-            )
+            # Set common x-label and title
+            ax.set_xlabel('Underlying Price (S)')
+            ax.set_title('Combined Metrics (Each with Own Y-Scale)')
+            ax.grid(True)
             
-            # Display the Plotly chart in Streamlit
-            st.plotly_chart(fig, use_container_width=True)
-            st.caption("Each metric is plotted with its own y-axis scale for better visibility (y-axes for Greeks are hidden to reduce clutter). Colors are fixed for each metric. Interactive Plotly chart for zooming and hovering.")
+            # Add legend
+            ax.legend(lines, [line.get_label() for line in lines], loc='upper left')
+            
+            # Display the plot in Streamlit
+            st.pyplot(fig)
+            st.caption("Each metric is plotted with its own y-axis scale for better visibility (primary on left; y-axes for Greeks are hidden to reduce clutter). Colors are fixed for each metric. Plot styled for better aesthetics.")
 except ValueError as e:
     st.error(f"Error: {e}")
+
