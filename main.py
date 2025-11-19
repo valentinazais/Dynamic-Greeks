@@ -179,9 +179,3 @@ try:
             st.caption("Each metric is plotted with its own y-axis scale for better visibility (primary on left, others on right). Colors are fixed for each metric.")
 except ValueError as e:
     st.error(f"Error: {e}")
-
-# Instructions for deployment
-st.sidebar.markdown("### Deployment Notes")
-st.sidebar.markdown("Save this as `app.py` (or `main.py`). Create `requirements.txt` with:")
-st.sidebar.code("streamlit\nnumpy\nscipy\npandas\nmatplotlib")
-st.sidebar.markdown("Upload to GitHub and deploy on Streamlit Cloud.")
