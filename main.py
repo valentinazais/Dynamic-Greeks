@@ -5,6 +5,9 @@ import pandas as pd
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 
+# Apply a nicer style to Matplotlib to make it look more like Streamlit's aesthetic
+plt.style.use('ggplot')
+
 # Updated Black-Scholes function with dividend yield (q)
 def black_scholes_option_price_and_greeks(S, K, T, r, q, sigma, option_type='call'):
     if T <= 0 or sigma <= 0:
@@ -179,6 +182,12 @@ try:
             
             # Display the plot in Streamlit
             st.pyplot(fig)
-            st.caption("Each metric is plotted with its own y-axis scale for better visibility (primary on left; y-axes for Greeks are hidden to reduce clutter). Colors are fixed for each metric.")
+            st.caption("Each metric is plotted with its own y-axis scale for better visibility (primary on left; y-axes for Greeks are hidden to reduce clutter). Colors are fixed for each metric. Plot styled for better aesthetics.")
 except ValueError as e:
     st.error(f"Error: {e}")
+
+# Instructions for deployment
+st.sidebar.markdown("### Deployment Notes")
+st.sidebar.markdown("Save this as `app.py` (or `main.py`). Create `requirements.txt` with:")
+st.sidebar.code("streamlit\nnumpy\nscipy\npandas\nmatplotlib")
+st.sidebar.markdown("Upload to GitHub and deploy on Streamlit Cloud.")
