@@ -130,6 +130,10 @@ st.sidebar.header("Select to Plot (on Same Graph)")
 plot_options = ["Payoff", "Delta", "Gamma", "Theta", "Vega", "Rho"]
 selected_plots = st.sidebar.multiselect("Choose to Overlay (Each with Own Scale)", plot_options, default=["Payoff"])
 
+# Display option for separate graphs
+st.sidebar.header("Display Options")
+show_separate = st.sidebar.button("Show Separate Graphs for Each Greek with Payoff")
+
 # Fixed colors for each metric
 colors = {
     'Payoff': 'black',
@@ -176,22 +180,25 @@ try:
         S_range = np.linspace(max(50, S - 50), S + 50, 100)
         
         # Dictionary to hold data for each plot
-        plot_data = {plot_name: [] for plot_name in selected_plots}
+        plot_data = {plot_name: [] for plot_name in plot_options}  # Compute all to have them ready
         
         for s in S_range:
-            for plot_name in selected_plots:
-                combined_value = 0
-                for leg in st.session_state.legs:
-                    sign = leg['position']
-                    if plot_name == 'Payoff':
+            for plot_name in plot_options:
+                if plot_name == 'Payoff':
+                    combined_value = 0
+                    for leg in st.session_state.legs:
+                        sign = leg['position']
                         if leg['type'] == 'call':
                             value = max(s - leg['strike'], 0)
                         else:
                             value = max(leg['strike'] - s, 0)
-                    else:
+                        combined_value += sign * value
+                else:
+                    combined_value = 0
+                    for leg in st.session_state.legs:
                         res = black_scholes_option_price_and_greeks(s, leg['strike'], T, r, q, sigma, leg['type'])
                         value = res.get(plot_name.lower(), 0)
-                    combined_value += sign * value
+                        combined_value += leg['position'] * value
                 plot_data[plot_name].append(combined_value)
         
         # Display combined plot with multiple y-axes (each metric has its own scale, but hide y-axes for Greeks)
@@ -231,5 +238,39 @@ try:
             # Display the plot in Streamlit
             st.pyplot(fig)
             st.caption("Each metric is plotted with its own y-axis scale for better visibility (primary on left; y-axes for Greeks are hidden to reduce clutter). Colors are fixed for each metric. Plot styled for better aesthetics.")
+        
+        # Separate graphs when button is clicked
+        if show_separate:
+            greeks_selected = [p for p in selected_plots if p in ["Delta", "Gamma", "Theta", "Vega", "Rho"]]
+            if not greeks_selected:
+                st.info("No Greeks selected for separate plots.")
+            else:
+                st.header("Separate Graphs for Each Greek with Payoff")
+                for greek in greeks_selected:
+                    st.subheader(f"{greek} and Payoff vs. Underlying Price (S)")
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    
+                    # Plot Payoff on left axis
+                    ax.plot(S_range, plot_data["Payoff"], color=colors['Payoff'], label='Payoff')
+                    ax.set_ylabel('Payoff', color=colors['Payoff'])
+                    ax.tick_params(axis='y', colors=colors['Payoff'])
+                    
+                    # Plot Greek on right axis
+                    ax2 = ax.twinx()
+                    ax2.plot(S_range, plot_data[greek], color=colors[greek], label=greek)
+                    ax2.set_ylabel(greek, color=colors[greek])
+                    ax2.tick_params(axis='y', colors=colors[greek])
+                    
+                    ax.set_xlabel('Underlying Price (S)')
+                    ax.set_title(f'{greek} and Payoff')
+                    ax.grid(True)
+                    
+                    # Combined legend
+                    lines = ax.get_lines() + ax2.get_lines()
+                    labels = [l.get_label() for l in lines]
+                    ax.legend(lines, labels, loc='upper left')
+                    
+                    st.pyplot(fig)
+                    st.caption(f"Payoff (left axis) and {greek} (right axis) with own scales.")
 except ValueError as e:
     st.error(f"Error: {e}")
