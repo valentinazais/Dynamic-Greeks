@@ -42,7 +42,7 @@ def black_scholes_option_price_and_greeks(S, K, T, r, q, sigma, option_type='cal
     }
 
 # Streamlit app
-st.title("Black-Scholes Option Strategy Dashboard (with Dividend Yield)")
+st.title("Black-Scholes Option Strategy Dashboard")
 
 # Initialize session state for parameters
 if 'S' not in st.session_state:
