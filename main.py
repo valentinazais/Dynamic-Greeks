@@ -150,9 +150,9 @@ for i, leg in enumerate(st.session_state.legs):
             del st.session_state.legs[i]
             st.rerun()
 
-# Select which metrics to plot (Greeks + Payoff + Time Value)
+# Select which metrics to plot (Greeks + Payoff + Time Value + Premium)
 st.sidebar.header("Select to Plot (on Same Graph)")
-plot_options = ["Payoff", "Delta", "Gamma", "Theta", "Vega", "Rho", "Time Value"]
+plot_options = ["Payoff", "Delta", "Gamma", "Theta", "Vega", "Rho", "Time Value", "Premium"]
 selected_plots = st.sidebar.multiselect("Choose to Overlay (Each with Own Scale)", plot_options, default=["Payoff"])
 
 # Display option for separate graphs
@@ -164,7 +164,7 @@ if 'single_plots' not in st.session_state:
     st.session_state.single_plots = []  # List of metrics to plot individually
 
 st.sidebar.header("Add Single Metric + Payoff Graph")
-single_metric = st.sidebar.selectbox("Select Metric", ["Delta", "Gamma", "Theta", "Vega", "Rho", "Time Value"], key="single_metric")
+single_metric = st.sidebar.selectbox("Select Metric", ["Delta", "Gamma", "Theta", "Vega", "Rho", "Time Value", "Premium"], key="single_metric")
 if st.sidebar.button("Add Graph for this Metric with Payoff"):
     if single_metric not in st.session_state.single_plots:
         st.session_state.single_plots.append(single_metric)
@@ -186,6 +186,7 @@ if st.session_state.single_plots:
 colors = {
     'Payoff': '#1a1a1a',  # Very dark gray (almost black)
     'Time Value': '#006666',  # Dark cyan
+    'Premium': '#556B2F',  # Dark olive green (new color for Premium)
     'Delta': '#00008b',  # Dark blue
     'Gamma': '#006400',  # Dark green
     'Theta': '#8b0000',  # Dark red
@@ -260,6 +261,11 @@ try:
                             intrinsic = max(leg['strike'] - s, 0)
                         time_value_leg = price - intrinsic
                         combined_value += leg['position'] * time_value_leg
+                elif plot_name == 'Premium':
+                    combined_value = 0
+                    for leg in st.session_state.legs:
+                        res = black_scholes_option_price_and_greeks(s, leg['strike'], T, r, q, sigma, leg['type'])
+                        combined_value += leg['position'] * res['price']
                 else:
                     combined_value = 0
                     for leg in st.session_state.legs:
