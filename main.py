@@ -44,13 +44,61 @@ def black_scholes_option_price_and_greeks(S, K, T, r, q, sigma, option_type='cal
 # Streamlit app
 st.title("Black-Scholes Option Strategy Dashboard (with Dividend Yield)")
 
+# Initialize session state for parameters
+if 'S' not in st.session_state:
+    st.session_state['S'] = 100.0
+if 'T' not in st.session_state:
+    st.session_state['T'] = 1.0
+if 'r' not in st.session_state:
+    st.session_state['r'] = 0.05
+if 'q' not in st.session_state:
+    st.session_state['q'] = 0.0
+if 'sigma' not in st.session_state:
+    st.session_state['sigma'] = 0.2
+
+# Callbacks to update session state
+def update_S():
+    st.session_state['S'] = st.session_state['num_S']
+
+def update_T():
+    st.session_state['T'] = st.session_state['num_T']
+
+def update_r():
+    st.session_state['r'] = st.session_state['num_r']
+
+def update_q():
+    st.session_state['q'] = st.session_state['num_q']
+
+def update_sigma():
+    st.session_state['sigma'] = st.session_state['num_sigma']
+
 # Sidebar for shared parameters
 st.sidebar.header("Shared Parameters")
-S = st.sidebar.slider("Current Underlying Price (S)", min_value=50.0, max_value=150.0, value=100.0, step=1.0)
-T = st.sidebar.slider("Time to Maturity (T)", min_value=0.01, max_value=5.0, value=1.0, step=0.01)
-r = st.sidebar.slider("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=0.05, step=0.01)
-q = st.sidebar.slider("Dividend Yield (q)", min_value=0.0, max_value=0.2, value=0.0, step=0.01)
-sigma = st.sidebar.slider("Volatility (sigma)", min_value=0.01, max_value=1.0, value=0.2, step=0.01)
+
+# Current Underlying Price (S)
+st.sidebar.number_input("Enter S manually", min_value=50.0, max_value=150.0, value=st.session_state['S'], step=1.0, key='num_S', on_change=update_S)
+st.sidebar.slider("Current Underlying Price (S)", min_value=50.0, max_value=150.0, value=st.session_state['S'], step=1.0, key='slider_S', on_change=update_S)
+S = st.session_state['S']
+
+# Time to Maturity (T)
+st.sidebar.number_input("Enter T manually", min_value=0.01, max_value=5.0, value=st.session_state['T'], step=0.01, key='num_T', on_change=update_T)
+st.sidebar.slider("Time to Maturity (T)", min_value=0.01, max_value=5.0, value=st.session_state['T'], step=0.01, key='slider_T', on_change=update_T)
+T = st.session_state['T']
+
+# Risk-Free Rate (r)
+st.sidebar.number_input("Enter r manually", min_value=0.0, max_value=0.2, value=st.session_state['r'], step=0.01, key='num_r', on_change=update_r)
+st.sidebar.slider("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=st.session_state['r'], step=0.01, key='slider_r', on_change=update_r)
+r = st.session_state['r']
+
+# Dividend Yield (q)
+st.sidebar.number_input("Enter q manually", min_value=0.0, max_value=0.2, value=st.session_state['q'], step=0.01, key='num_q', on_change=update_q)
+st.sidebar.slider("Dividend Yield (q)", min_value=0.0, max_value=0.2, value=st.session_state['q'], step=0.01, key='slider_q', on_change=update_q)
+q = st.session_state['q']
+
+# Volatility (sigma)
+st.sidebar.number_input("Enter sigma manually", min_value=0.01, max_value=1.0, value=st.session_state['sigma'], step=0.01, key='num_sigma', on_change=update_sigma)
+st.sidebar.slider("Volatility (sigma)", min_value=0.01, max_value=1.0, value=st.session_state['sigma'], step=0.01, key='slider_sigma', on_change=update_sigma)
+sigma = st.session_state['sigma']
 
 # Manage option legs using session state
 if 'legs' not in st.session_state:
