@@ -284,14 +284,14 @@ try:
             for i, plot_name in enumerate(selected_plots):
                 if i == 0:
                     # First metric on primary axis (left)
-                    line, = ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name, zorder=3)
+                    line, = ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name)
                     ax.set_ylabel(plot_name, color=colors[plot_name])
                     ax.tick_params(axis='y', colors=colors[plot_name])
                 else:
                     # Additional metrics on new twinx axes (right, spaced out), show y-axis for all
                     new_ax = ax.twinx()
                     new_ax.spines['right'].set_position(('axes', 1.0 + 0.1 * (i - 1)))
-                    line, = new_ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name, zorder=3)
+                    line, = new_ax.plot(S_range, plot_data[plot_name], color=colors[plot_name], label=plot_name)
                     new_ax.set_ylabel(plot_name, color=colors[plot_name])
                     new_ax.tick_params(axis='y', colors=colors[plot_name])
                     axes.append(new_ax)
@@ -300,7 +300,7 @@ try:
             # Set common x-label and title
             ax.set_xlabel('Underlying Price (S)')
             ax.set_title('Combined Metrics (Each with Own Y-Scale)')
-            ax.grid(True, zorder=0)
+            ax.grid(True)
             
             # Add legend
             ax.legend(lines, [line.get_label() for line in lines], loc='upper left')
@@ -321,19 +321,19 @@ try:
                     fig, ax = plt.subplots(figsize=(10, 6))
                     
                     # Plot Payoff on left axis
-                    ax.plot(S_range, plot_data["Payoff"], color=colors['Payoff'], label='Payoff', zorder=3)
+                    ax.plot(S_range, plot_data["Payoff"], color=colors['Payoff'], label='Payoff')
                     ax.set_ylabel('Payoff', color=colors['Payoff'])
                     ax.tick_params(axis='y', colors=colors['Payoff'])
                     
                     # Plot Metric on right axis
                     ax2 = ax.twinx()
-                    ax2.plot(S_range, plot_data[metric], color=colors[metric], label=metric, zorder=3)
+                    ax2.plot(S_range, plot_data[metric], color=colors[metric], label=metric)
                     ax2.set_ylabel(metric, color=colors[metric])
                     ax2.tick_params(axis='y', colors=colors[metric])
                     
                     ax.set_xlabel('Underlying Price (S)')
                     ax.set_title(f'{metric} and Payoff')
-                    ax.grid(True, zorder=0)
+                    ax.grid(True)
                     
                     # Combined legend
                     lines = ax.get_lines() + ax2.get_lines()
@@ -351,19 +351,19 @@ try:
                 fig, ax = plt.subplots(figsize=(10, 6))
                 
                 # Plot Payoff on left axis
-                ax.plot(S_range, plot_data["Payoff"], color=colors['Payoff'], label='Payoff', zorder=3)
+                ax.plot(S_range, plot_data["Payoff"], color=colors['Payoff'], label='Payoff')
                 ax.set_ylabel('Payoff', color=colors['Payoff'])
                 ax.tick_params(axis='y', colors=colors['Payoff'])
                 
                 # Plot Metric on right axis
                 ax2 = ax.twinx()
-                ax2.plot(S_range, plot_data[metric], color=colors[metric], label=metric, zorder=3)
+                ax2.plot(S_range, plot_data[metric], color=colors[metric], label=metric)
                 ax2.set_ylabel(metric, color=colors[metric])
                 ax2.tick_params(axis='y', colors=colors[metric])
                 
                 ax.set_xlabel('Underlying Price (S)')
                 ax.set_title(f'{metric} and Payoff')
-                ax.grid(True, zorder=0)
+                ax.grid(True)
                 
                 # Combined legend
                 lines = ax.get_lines() + ax2.get_lines()
